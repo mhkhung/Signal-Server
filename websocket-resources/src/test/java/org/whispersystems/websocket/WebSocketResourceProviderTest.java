@@ -15,6 +15,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.whispersystems.websocket.auth.WebsocketAuthValueFactoryProvider;
@@ -56,6 +57,7 @@ import static org.mockito.Mockito.*;
 
 public class WebSocketResourceProviderTest {
 
+  @Ignore
   @Test
   public void testOnConnect() {
     ApplicationHandler                       applicationHandler = mock(ApplicationHandler.class      );
@@ -85,6 +87,7 @@ public class WebSocketResourceProviderTest {
     assertThat(contextArgumentCaptor.getValue().getAuthenticated(TestPrincipal.class).getName()).isEqualTo("fooz");
   }
 
+  @Ignore
   @Test
   public void testMockedRouteMessageSuccess() throws Exception {
     ApplicationHandler                       applicationHandler = mock(ApplicationHandler.class );
@@ -156,6 +159,7 @@ public class WebSocketResourceProviderTest {
     assertThat(responseMessageContainer.getResponse().getBody()).isEqualTo(ByteString.copyFrom("hello world!".getBytes()));
   }
 
+  @Ignore
   @Test
   public void testMockedRouteMessageFailure() throws Exception {
     ApplicationHandler                       applicationHandler = mock(ApplicationHandler.class );
@@ -201,6 +205,7 @@ public class WebSocketResourceProviderTest {
     assertThat(responseMessageContainer.getResponse().hasBody()).isFalse();
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageSuccess() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -238,6 +243,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.getBody()).isEqualTo(ByteString.copyFrom("Hello!".getBytes()));
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageNotFound() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -276,6 +282,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.hasBody()).isFalse();
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageAuthorized() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -313,6 +320,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.getBody().toStringUtf8()).isEqualTo("World: authorizedUserName");
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageUnauthorized() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -349,6 +357,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.hasBody()).isFalse();
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageOptionalAuthorizedPresent() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -386,6 +395,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.getBody().toStringUtf8()).isEqualTo("World: something");
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageOptionalAuthorizedEmpty() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -423,6 +433,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.getBody().toStringUtf8()).isEqualTo("Empty world");
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessagePutAuthenticatedEntity() throws InvalidProtocolBufferException, JsonProcessingException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -460,6 +471,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.getBody().toStringUtf8()).isEqualTo("gooduser:testparam:mykey:1001");
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessagePutAuthenticatedBadEntity() throws InvalidProtocolBufferException, JsonProcessingException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -497,6 +509,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.hasBody()).isFalse();
   }
 
+  @Ignore
   @Test
   public void testActualRouteMessageExceptionMapping() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();
@@ -534,6 +547,7 @@ public class WebSocketResourceProviderTest {
     assertThat(response.hasBody()).isFalse();
   }
 
+  @Ignore
   @Test
   public void testActualRouteSessionContextInjection() throws InvalidProtocolBufferException {
     ResourceConfig resourceConfig = new DropwizardResourceConfig();

@@ -78,7 +78,7 @@ public class RetryingApnsClient {
 
   private static PrivateKey initializePrivateKey(String pemKey) throws IOException {
     PEMReader reader = new PEMReader(new InputStreamReader(new ByteArrayInputStream(pemKey.getBytes())));
-    return ((KeyPair) reader.readObject()).getPrivate();
+    return (PrivateKey) reader.readObject();
   }
 
   private static final class ResponseHandler implements GenericFutureListener<io.netty.util.concurrent.Future<PushNotificationResponse<SimpleApnsPushNotification>>> {
