@@ -8,6 +8,8 @@ Looking for protocol documentation? Check out the website!
 
 https://signal.org/docs/
 
+https://github.com/signalapp/Signal-Server/wiki/API-Protocol
+
 Cryptography Notice
 ------------
 
