@@ -10,6 +10,8 @@ https://signal.org/docs/
 
 https://github.com/signalapp/Signal-Server/wiki/API-Protocol
 
+https://signal.org/blog/
+
 Cryptography Notice
 ------------
 
