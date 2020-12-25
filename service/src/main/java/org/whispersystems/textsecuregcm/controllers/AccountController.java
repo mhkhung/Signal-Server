@@ -196,6 +196,7 @@ public class AccountController {
       throw new WebApplicationException(Response.status(400).build());
     }
 
+    if (forwardedFor == null) forwardedFor = "0.0.0.0";
     String requester = Arrays.stream(forwardedFor.split(","))
                              .map(String::trim)
                              .reduce((a, b) -> b)
