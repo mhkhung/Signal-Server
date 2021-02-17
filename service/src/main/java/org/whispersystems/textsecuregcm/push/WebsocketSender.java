@@ -39,7 +39,8 @@ public class WebsocketSender {
   public enum Type {
     APN,
     GCM,
-    WEB
+    WEB,
+    WEBHOOK
   }
 
   @SuppressWarnings("unused")
@@ -50,6 +51,10 @@ public class WebsocketSender {
   private final Meter websocketRequeueMeter = metricRegistry.meter(name(getClass(), "ws_requeue"));
   private final Meter websocketOnlineMeter  = metricRegistry.meter(name(getClass(), "ws_online"  ));
   private final Meter websocketOfflineMeter = metricRegistry.meter(name(getClass(), "ws_offline" ));
+
+  private final Meter webhookRequeueMeter = metricRegistry.meter(name(getClass(), "wh_requeue"));
+  private final Meter webhookOnlineMeter  = metricRegistry.meter(name(getClass(), "wh_online"  ));
+  private final Meter webhookOfflineMeter = metricRegistry.meter(name(getClass(), "wh_offline" ));
 
   private final Meter apnOnlineMeter        = metricRegistry.meter(name(getClass(), "apn_online" ));
   private final Meter apnOfflineMeter       = metricRegistry.meter(name(getClass(), "apn_offline"));
@@ -78,28 +83,34 @@ public class WebsocketSender {
     if (pubSubManager.publish(address, pubSubMessage)) {
       if      (channel == Type.APN) apnOnlineMeter.mark();
       else if (channel == Type.GCM) gcmOnlineMeter.mark();
+      else if (channel == Type.WEBHOOK) webhookOnlineMeter.mark();
       else                          websocketOnlineMeter.mark();
 
       return new DeliveryStatus(true);
     } else {
       if      (channel == Type.APN) apnOfflineMeter.mark();
       else if (channel == Type.GCM) gcmOfflineMeter.mark();
+      else if (channel == Type.WEBHOOK) webhookOfflineMeter.mark();
       else                          websocketOfflineMeter.mark();
 
-      if (!online) queueMessage(account, device, message);
+      if (!online) queueMessage(account, device, message, channel);
       return new DeliveryStatus(false);
     }
   }
 
-  public void queueMessage(Account account, Device device, Envelope message) {
-    websocketRequeueMeter.mark();
-
+  public void queueMessage(Account account, Device device, Envelope message, Type channel) {
+    if (channel == Type.WEB) {
+      websocketRequeueMeter.mark();
+    }
+    else if (channel == Type.WEBHOOK) {
+      webhookRequeueMeter.mark(); 
+    }
     WebsocketAddress address = new WebsocketAddress(account.getNumber(), device.getId());
 
     messagesManager.insert(account.getNumber(), device.getId(), message);
     pubSubManager.publish(address, PubSubMessage.newBuilder()
                                                 .setType(PubSubMessage.Type.QUERY_DB)
-                                                .build());
+                                                .build());  
   }
 
   public boolean sendProvisioningMessage(ProvisioningAddress address, byte[] body) {

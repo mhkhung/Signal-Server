@@ -56,6 +56,9 @@ public class Device {
   private String  voipApnId;
 
   @JsonProperty
+  private String  webhookUrl;
+
+  @JsonProperty
   private long pushTimestamp;
 
   @JsonProperty
@@ -85,7 +88,7 @@ public class Device {
   public Device() {}
 
   public Device(long id, String name, String authToken, String salt,
-                String signalingKey, String gcmId, String apnId,
+                String signalingKey, String gcmId, String apnId, String webhookUrl,
                 String voipApnId, boolean fetchesMessages,
                 int registrationId, SignedPreKey signedPreKey,
                 long lastSeen, long created, String userAgent,
@@ -98,6 +101,7 @@ public class Device {
     this.signalingKey            = signalingKey;
     this.gcmId                   = gcmId;
     this.apnId                   = apnId;
+    this.webhookUrl              = webhookUrl;
     this.voipApnId               = voipApnId;
     this.fetchesMessages         = fetchesMessages;
     this.registrationId          = registrationId;
@@ -117,6 +121,18 @@ public class Device {
     this.apnId = apnId;
 
     if (apnId != null) {
+      this.pushTimestamp = System.currentTimeMillis();
+    }
+  }
+
+  public String getWebhookUrl() {
+    return webhookUrl;
+  }
+
+  public void setWebhookUrl(String webhookUrl) {
+    this.webhookUrl = webhookUrl;
+
+    if (webhookUrl != null) {
       this.pushTimestamp = System.currentTimeMillis();
     }
   }
@@ -207,7 +223,7 @@ public class Device {
   }
 
   public boolean isEnabled() {
-    boolean hasChannel = fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId());
+    boolean hasChannel = fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId()) || !Util.isEmpty(getWebhookUrl());
 
     return (id == MASTER_ID && hasChannel && signedPreKey != null) ||
            (id != MASTER_ID && hasChannel && signedPreKey != null && lastSeen > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30)));

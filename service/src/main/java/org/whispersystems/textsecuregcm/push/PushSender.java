@@ -43,17 +43,20 @@ public class PushSender implements Managed {
   private final ApnFallbackManager         apnFallbackManager;
   private final GCMSender                  gcmSender;
   private final APNSender                  apnSender;
+  private final WebhookSender              webhookSender;
   private final WebsocketSender            webSocketSender;
   private final BlockingThreadPoolExecutor executor;
   private final int                        queueSize;
 
   public PushSender(ApnFallbackManager apnFallbackManager,
-                    GCMSender gcmSender, APNSender apnSender,
+                    GCMSender gcmSender, APNSender apnSender, 
+                    WebhookSender webhookSender,
                     WebsocketSender websocketSender, int queueSize)
   {
     this.apnFallbackManager = apnFallbackManager;
     this.gcmSender          = gcmSender;
     this.apnSender          = apnSender;
+    this.webhookSender      = webhookSender;
     this.webSocketSender    = websocketSender;
     this.queueSize          = queueSize;
     this.executor           = new BlockingThreadPoolExecutor(50, queueSize);
@@ -66,7 +69,7 @@ public class PushSender implements Managed {
   public void sendMessage(final Account account, final Device device, final Envelope message, boolean online)
       throws NotPushRegisteredException
   {
-    if (device.getGcmId() == null && device.getApnId() == null && !device.getFetchesMessages()) {
+    if (device.getGcmId() == null && device.getApnId() == null && device.getWebhookUrl() == null && !device.getFetchesMessages()) {
       throw new NotPushRegisteredException("No delivery possible!");
     }
 
@@ -82,6 +85,7 @@ public class PushSender implements Managed {
   {
     if      (device.getGcmId() != null)    sendGcmNotification(account, device);
     else if (device.getApnId() != null)    sendApnNotification(account, device, true);
+    else if (device.getWebhookUrl() != null)    sendWebhookNotification(account, device);
     else if (!device.getFetchesMessages()) throw new NotPushRegisteredException("No notification possible!");
   }
 
@@ -92,6 +96,7 @@ public class PushSender implements Managed {
   private void sendSynchronousMessage(Account account, Device device, Envelope message, boolean online) {
     if      (device.getGcmId() != null)   sendGcmMessage(account, device, message, online);
     else if (device.getApnId() != null)   sendApnMessage(account, device, message, online);
+    else if (device.getWebhookUrl() != null)   sendWebhookMessage(account, device, message, online);
     else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message, online);
     else                                  throw new AssertionError();
   }
@@ -110,6 +115,22 @@ public class PushSender implements Managed {
 
     gcmSender.sendMessage(gcmMessage);
   }
+
+  private void sendWebhookMessage(Account account, Device device, Envelope message, boolean online) {
+    DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.WEBHOOK, online);
+
+    if (!deliveryStatus.isDelivered() && !online) {
+      sendWebhookNotification(account, device);
+    }
+  }
+
+  private void sendWebhookNotification(Account account, Device device) {
+    WebhookMessage webhookMessage = new WebhookMessage(device.getWebhookUrl(), account.getNumber(),
+                                           (int)device.getId(), WebhookMessage.Type.NOTIFICATION, Optional.empty());
+
+    webhookSender.sendMessage(webhookMessage);
+  }
+
 
   private void sendApnMessage(Account account, Device device, Envelope outgoingMessage, boolean online) {
     DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, outgoingMessage, WebsocketSender.Type.APN, online);

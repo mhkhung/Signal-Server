@@ -13,6 +13,7 @@ import org.whispersystems.textsecuregcm.push.ApnFallbackManager;
 import org.whispersystems.textsecuregcm.push.PushSender;
 import org.whispersystems.textsecuregcm.push.ReceiptSender;
 import org.whispersystems.textsecuregcm.push.WebsocketSender;
+import org.whispersystems.textsecuregcm.push.WebsocketSender.Type;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -258,7 +259,7 @@ public class WebSocketConnectionTest {
     futures.get(0).completeExceptionally(new IOException());
 
     verify(receiptSender, times(1)).sendReceipt(eq(account), eq("sender2"), eq(secondMessage.getTimestamp()));
-    verify(websocketSender, times(1)).queueMessage(eq(account), eq(device), any(Envelope.class));
+    verify(websocketSender, times(1)).queueMessage(eq(account), eq(device), any(Envelope.class), Type.WEB);
     verify(pushSender, times(1)).sendQueuedNotification(eq(account), eq(device));
 
     connection.onDispatchUnsubscribed(websocketAddress.serialize());

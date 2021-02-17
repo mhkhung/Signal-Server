@@ -173,6 +173,7 @@ public class DirectoryController {
                                                @Valid ClientContactTokens contacts)
       throws RateLimitExceededException
   {
+    if (forwardedFor == null) forwardedFor = "0.0.0.0";
     String requester = Arrays.stream(forwardedFor.split(","))
                              .map(String::trim)
                              .reduce((a, b) -> b)

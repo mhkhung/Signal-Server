@@ -17,6 +17,7 @@ import org.whispersystems.textsecuregcm.entities.OutgoingMessageEntityList;
 import org.whispersystems.textsecuregcm.push.NotPushRegisteredException;
 import org.whispersystems.textsecuregcm.push.PushSender;
 import org.whispersystems.textsecuregcm.push.ReceiptSender;
+import org.whispersystems.textsecuregcm.push.WebsocketSender.Type;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.Device;
 import org.whispersystems.textsecuregcm.storage.MessagesManager;
@@ -144,7 +145,7 @@ public class WebSocketConnection implements DispatchChannel {
   }
 
   private void requeueMessage(Envelope message) {
-    pushSender.getWebSocketSender().queueMessage(account, device, message);
+    pushSender.getWebSocketSender().queueMessage(account, device, message, Type.WEBHOOK);
 
     try {
       pushSender.sendQueuedNotification(account, device);

@@ -41,6 +41,7 @@ import org.whispersystems.textsecuregcm.entities.DeviceName;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
 import org.whispersystems.textsecuregcm.entities.RegistrationLock;
 import org.whispersystems.textsecuregcm.entities.RegistrationLockFailure;
+import org.whispersystems.textsecuregcm.entities.WebhookUri;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.push.APNSender;
 import org.whispersystems.textsecuregcm.push.ApnMessage;
@@ -236,7 +237,7 @@ public class AccountController {
     if (testDevices.containsKey(number)) {
       // noop
     } else if (transport.equals("sms")) {
-      smsSender.deliverSmsVerification(number, client, verificationCode.getVerificationCodeDisplay());
+      smsSender.deliverSmsVerification(number, client, verificationCode.getVerificationCode());
     } else if (transport.equals("voice")) {
       smsSender.deliverVoxVerification(number, verificationCode.getVerificationCode(), locale);
     }
@@ -334,6 +335,7 @@ public class AccountController {
     device.setApnId(null);
     device.setVoipApnId(null);
     device.setGcmId(registrationId.getGcmRegistrationId());
+    device.setWebhookUrl(null);
     device.setFetchesMessages(false);
 
     accounts.update(account);
@@ -361,6 +363,50 @@ public class AccountController {
 
   @Timed
   @PUT
+  @Path("/webhook/")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void setWebhookUrl(@Auth DisabledPermittedAccount disabledPermittedAccount, @Valid WebhookUri webhookUri) {
+    Account account           = disabledPermittedAccount.getAccount();
+    Device  device            = account.getAuthenticatedDevice().get();
+    boolean wasAccountEnabled = account.isEnabled();
+
+    if (device.getWebhookUrl() != null &&
+        device.getWebhookUrl().equals(webhookUri.getLocation()))
+    {
+      return;
+    }
+
+    device.setApnId(null);
+    device.setVoipApnId(null);
+    device.setGcmId(null);
+    device.setWebhookUrl(webhookUri.getLocation());
+    device.setFetchesMessages(false);
+
+    accounts.update(account);
+
+    if (!wasAccountEnabled && account.isEnabled()) {
+      directoryQueue.addRegisteredUser(account.getUuid(), account.getNumber());
+    }
+  }
+
+  @Timed
+  @DELETE
+  @Path("/webhook/")
+  public void deleteWebhookUrl(@Auth DisabledPermittedAccount disabledPermittedAccount) {
+    Account account = disabledPermittedAccount.getAccount();
+    Device  device  = account.getAuthenticatedDevice().get();
+    device.setWebhookUrl(null);
+    device.setFetchesMessages(false);
+
+    accounts.update(account);
+
+    if (!account.isEnabled()) {
+      directoryQueue.deleteRegisteredUser(account.getUuid(), account.getNumber());
+    }
+  }
+
+  @Timed
+  @PUT
   @Path("/apn/")
   @Consumes(MediaType.APPLICATION_JSON)
   public void setApnRegistrationId(@Auth DisabledPermittedAccount disabledPermittedAccount, @Valid ApnRegistrationId registrationId) {
@@ -371,6 +417,7 @@ public class AccountController {
     device.setApnId(registrationId.getApnRegistrationId());
     device.setVoipApnId(registrationId.getVoipRegistrationId());
     device.setGcmId(null);
+    device.setWebhookUrl(null);
     device.setFetchesMessages(false);
     accounts.update(account);
 

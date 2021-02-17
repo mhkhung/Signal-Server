@@ -47,6 +47,7 @@ public class PushFeedbackProcessor extends AccountDatabaseCrawlerListener {
             device.setGcmId(null);
             device.setApnId(null);
             device.setVoipApnId(null);
+            device.setWebhookUrl(null);
             device.setFetchesMessages(false);
             expired.mark();
           } else {

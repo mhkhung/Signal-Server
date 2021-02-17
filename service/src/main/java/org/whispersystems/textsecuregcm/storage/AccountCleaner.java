@@ -68,6 +68,7 @@ public class AccountCleaner extends AccountDatabaseCrawlerListener {
           masterDevice.setApnId(null);
           masterDevice.setVoipApnId(null);
           masterDevice.setGcmId(null);
+          masterDevice.setWebhookUrl(null);
 
           accountUpdateCount++;
           accountsManager.update(account);
